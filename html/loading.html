@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Hub — Loading</title>
+<style>
+  :root{
+    --bg:#4a9960;
+    --dark:#1f4d33;
+    --tagline:#2e5c40;
+  }
+  html,body{
+    margin:0;
+    height:100%;
+    background:var(--bg);
+    overflow:hidden;
+    font-family:'Arial Black', Arial, Helvetica, sans-serif;
+  }
+  .stage{
+    height:100vh;
+    width:100vw;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .word-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    white-space:nowrap;
+  }
+  .letter{
+    display:inline-block;
+    font-weight:900;
+    font-size:clamp(34px, 7vw, 96px);
+    color:var(--dark);
+    letter-spacing:0;
+    line-height:1;
+    overflow:hidden;
+    transition: max-width 0.55s cubic-bezier(.6,0,.3,1),
+                opacity 0.4s ease,
+                transform 0.5s cubic-bezier(.6,0,.3,1),
+                margin 0.55s ease;
+    transform-origin:center;
+  }
+  .letter.space{
+    font-weight:400;
+  }
+  .letter.shrink{
+    max-width:0 !important;
+    opacity:0;
+    transform:translateY(18px) scale(.4);
+    margin:0 !important;
+  }
+  .letter.pulse{
+    animation:pulseLetter .5s ease;
+  }
+  @keyframes pulseLetter{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.18);color:#173d27;}
+    100%{transform:scale(1);}
+  }
+  .tagline{
+    margin-top:18px;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:clamp(14px, 1.6vw, 22px);
+    letter-spacing:2px;
+    color:var(--tagline);
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .6s ease, transform .6s ease;
+    text-transform:uppercase;
+  }
+  .tagline.show{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .progress-wrap{
+    position:absolute;
+    bottom:14%;
+    width:min(260px, 60vw);
+    height:3px;
+    background:rgba(31,77,51,0.18);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:var(--dark);
+    border-radius:3px;
+    transition:width .15s linear;
+  }
+  .restart-hint{
+    position:absolute;
+    bottom:6%;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:12px;
+    letter-spacing:1px;
+    color:rgba(31,77,51,0.5);
+    cursor:pointer;
+    user-select:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div>
+    <div class="word-row" id="wordRow"></div>
+    <div class="tagline" id="tagline">Discover. Connect. Experience.</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+</div>
+
+<script>
+const FULL = "EVENTITATIVE HUBVERSION";
+const FINAL = "EVENT HUB";
+
+// Build a keep-mask aligning FULL -> FINAL by matching a longest common
+// subsequence-ish greedy approach so the surviving letters of FULL are
+// exactly the letters of FINAL, in order.
+function buildKeepMask(full, final){
+  const keep = new Array(full.length).fill(false);
+  let fi = 0;
+  for(let i=0;i<full.length;i++){
+    if(fi < final.length && full[i] === final[fi]){
+      keep[i] = true;
+      fi++;
+    }
+  }
+  return keep;
+}
+
+const wordRow = document.getElementById('wordRow');
+const tagline = document.getElementById('tagline');
+const progressBar = document.getElementById('progressBar');
+
+let keepMask = buildKeepMask(FULL, FINAL);
+
+function render(){
+  wordRow.innerHTML = '';
+  for(let i=0;i<FULL.length;i++){
+    const ch = FULL[i];
+    const span = document.createElement('span');
+    span.className = 'letter' + (ch === ' ' ? ' space' : '');
+    span.dataset.keep = keepMask[i] ? '1' : '0';
+    span.dataset.index = i;
+    span.textContent = ch === ' ' ? '\u00A0' : ch;
+    wordRow.appendChild(span);
+  }
+}
+
+function lockWidths(){
+  const spans = wordRow.querySelectorAll('.letter');
+  spans.forEach(s=>{
+    const w = s.getBoundingClientRect().width;
+    s.style.maxWidth = w + 'px';
+  });
+}
+
+function runAnimation(){
+  render();
+  // force layout then lock current widths so the max-width transition works
+  requestAnimationFrame(()=>{
+    lockWidths();
+
+    setTimeout(()=>{
+      const spans = Array.from(wordRow.querySelectorAll('.letter'));
+
+      // progress bar ticking through the whole sequence
+      let progress = 0;
+      const totalDuration = 2600;
+      const startTime = performance.now();
+      function tickProgress(){
+        const elapsed = performance.now() - startTime;
+        progress = Math.min(100, (elapsed/totalDuration)*100);
+        progressBar.style.width = progress + '%';
+        if(progress < 100){ requestAnimationFrame(tickProgress); }
+      }
+      tickProgress();
+
+      // shrink away the letters that don't survive, staggered
+      spans.filter(s=>s.dataset.keep==='0').forEach((s, idx)=>{
+        setTimeout(()=>{
+          s.classList.add('shrink');
+        }, 90 * idx);
+      });
+
+      // pulse the surviving letters once the shrink finishes
+      const dropTime = 90 * spans.filter(s=>s.dataset.keep==='0').length + 550;
+      setTimeout(()=>{
+        spans.filter(s=>s.dataset.keep==='1').forEach((s, idx)=>{
+          setTimeout(()=> s.classList.add('pulse'), idx*40);
+        });
+      }, dropTime);
+
+      // tagline reveal
+      setTimeout(()=>{
+        tagline.classList.add('show');
+      }, dropTime + 350);
+
+      // redirect to the main site once the loading sequence finishes
+      setTimeout(()=>{
+        window.location.href = 'index.html';
+      }, dropTime + 1400);
+
+    }, 500); // initial pause showing full word before shrink starts
+  });
+}
+
+runAnimation();
+</script>
+
+</body>
+</html>
