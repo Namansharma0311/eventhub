@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discover Amazing Events — EventHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+
+</head>
+<body>
+
+<div id="siteLoader" style="position:fixed;inset:0;z-index:9999;background:#4a9960;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;font-family:'Arial Black', Arial, Helvetica, sans-serif;transition:opacity .6s ease, visibility .6s ease;">
+  <div id="loaderWordRow" style="display:flex;align-items:baseline;justify-content:center;white-space:nowrap;"></div>
+  <div id="loaderTagline" style="margin-top:18px;font-family:Arial, Helvetica, sans-serif;font-size:clamp(14px,1.6vw,22px);letter-spacing:2px;color:#2e5c40;opacity:0;transform:translateY(8px);transition:opacity .6s ease, transform .6s ease;text-transform:uppercase;">Discover. Connect. Experience.</div>
+  <div style="position:absolute;bottom:14%;width:min(260px,60vw);height:3px;background:rgba(31,77,51,0.18);border-radius:3px;overflow:hidden;">
+    <div id="loaderProgressBar" style="height:100%;width:0%;background:#1f4d33;border-radius:3px;transition:width .15s linear;"></div>
+  </div>
+</div>
+<style>
+  .loader-letter{display:inline-block;font-weight:900;font-size:clamp(34px,7vw,96px);color:#1f4d33;line-height:1;overflow:hidden;transition:max-width .55s cubic-bezier(.6,0,.3,1),opacity .4s ease,transform .5s cubic-bezier(.6,0,.3,1),margin .55s ease;transform-origin:center;}
+  .loader-letter.space{font-weight:400;}
+  .loader-letter.shrink{max-width:0 !important;opacity:0;transform:translateY(18px) scale(.4);margin:0 !important;}
+  .loader-letter.pulse{animation:loaderPulse .5s ease;}
+  @keyframes loaderPulse{0%{transform:scale(1);}40%{transform:scale(1.18);color:#173d27;}100%{transform:scale(1);}}
+</style>
+<script>
+(function(){
+  const FULL = "EVENTITATIVE HUBVERSION";
+  const FINAL = "EVENT HUB";
+  function buildKeepMask(full, final){
+    const keep = new Array(full.length).fill(false);
+    let fi = 0;
+    for(let i=0;i<full.length;i++){
+      if(fi < final.length && full[i] === final[fi]){ keep[i]=true; fi++; }
+    }
+    return keep;
+  }
+  const wordRow = document.getElementById('loaderWordRow');
+  const tagline = document.getElementById('loaderTagline');
+  const progressBar = document.getElementById('loaderProgressBar');
+  const loader = document.getElementById('siteLoader');
+  const keepMask = buildKeepMask(FULL, FINAL);
+
+  for(let i=0;i<FULL.length;i++){
+    const ch = FULL[i];
+    const span = document.createElement('span');
+    span.className = 'loader-letter' + (ch===' ' ? ' space' : '');
+    span.dataset.keep = keepMask[i] ? '1' : '0';
+    span.textContent = ch===' ' ? '\u00A0' : ch;
+    wordRow.appendChild(span);
+  }
+
+  requestAnimationFrame(()=>{
+    const spans = Array.from(wordRow.querySelectorAll('.loader-letter'));
+    spans.forEach(s=>{ s.style.maxWidth = s.getBoundingClientRect().width + 'px'; });
+
+    setTimeout(()=>{
+      const totalDuration = 1800;
+      const startTime = performance.now();
+      function tickProgress(){
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(100, (elapsed/totalDuration)*100);
+        progressBar.style.width = progress + '%';
+        if(progress < 100){ requestAnimationFrame(tickProgress); }
+      }
+      tickProgress();
+
+      const dropSpans = spans.filter(s=>s.dataset.keep==='0');
+      dropSpans.forEach((s, idx)=>{ setTimeout(()=> s.classList.add('shrink'), 70*idx); });
+
+      const dropTime = 70 * dropSpans.length + 450;
+      setTimeout(()=>{
+        spans.filter(s=>s.dataset.keep==='1').forEach((s, idx)=>{
+          setTimeout(()=> s.classList.add('pulse'), idx*40);
+        });
+      }, dropTime);
+
+      setTimeout(()=>{ tagline.style.opacity='1'; tagline.style.transform='translateY(0)'; }, dropTime + 300);
+
+      setTimeout(()=>{
+        loader.style.pointerEvents = 'none';
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        document.body.classList.remove('loading');
+        setTimeout(()=> loader.remove(), 650);
+      }, dropTime + 900);
+
+    }, 350);
+  });
+
+  // fail-safe: never let the overlay block the page if something above stalls
+  setTimeout(()=>{
+    if(loader && loader.parentNode){
+      loader.style.pointerEvents = 'none';
+      loader.style.opacity = '0';
+      loader.style.visibility = 'hidden';
+      document.body.classList.remove('loading');
+      loader.remove();
+    }
+  }, 4000);
+})();
+</script>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <div class="brand-icon"></div>
+      <div class="brand-text">
+        <span class="brand-name">EventHub</span>
+        <span class="brand-tagline">Discover · Connect · Experience</span>
+      </div>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html" class="active">Home</a>
+<a href="events.html" class="">Events</a>
+<a href="create-event.html" class="">Create Event</a>
+<a href="saved-events.html" class="">Saved Events</a>
+<a href="contact.html" class="">Contact</a>
+
+    </nav>
+    <div class="header-actions">
+      <a href="signin.html" class="btn-signin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Sign In
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    <div class="ticker-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.5.5-2.8 1.5-4"/></svg>
+      What's Happening
+    </div>
+    <span class="ticker-divider"></span>
+    <div class="ticker-track">
+      <div class="ticker-scroll">
+        <span class="ticker-item">Tech Summit 2025 on Aug 15</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Design Conference on Aug 22</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">AI Workshop on Aug 30</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Music Fest 2025 on Sept 5</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Startup Pitch Day on Sept 12</span>
+      </div>
+      <div class="ticker-scroll" aria-hidden="true">
+        <span class="ticker-item">Tech Summit 2025 on Aug 15</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Design Conference on Aug 22</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">AI Workshop on Aug 30</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Music Fest 2025 on Sept 5</span>
+        <span class="ticker-divider"></span>
+        <span class="ticker-item">Startup Pitch Day on Sept 12</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero" style="max-width:1280px;margin:0 auto;padding:3.5rem 2rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;">
+  <div class="hero-content" style="max-width:560px;">
+    <p class="eyebrow" style="font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--primary);margin-bottom:1rem;">Discover Amazing Events</p>
+    <h1 style="font-size:clamp(2.2rem,4vw,3.2rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;margin-bottom:1.2rem;color:var(--text);">Find Events That <br><span style="color:var(--primary);">Inspire</span> You</h1>
+    <p style="font-size:1rem;color:var(--text-light);line-height:1.7;margin-bottom:2rem;max-width:440px;">Explore tech, design, business, and creative events happening around you. Connect, learn and grow with people who share your interests.</p>
+
+    <div class="search-box" style="display:flex;background:white;border:1px solid #e5e7eb;border-radius:var(--radius-sm);padding:0.4rem;box-shadow:0 4px 16px rgba(0,0,0,0.04);margin-bottom:1.5rem;transition:var(--transition);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="homeSearchInput" placeholder="Search events, categories, or keywords..." style="flex:1;border:none;background:transparent;font-size:0.95rem;color:var(--text);outline:none;font-family:inherit;">
+      <button id="homeSearchBtn" style="background:var(--primary);color:white;border:none;padding:0.6rem 1.4rem;border-radius:8px;font-weight:600;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:var(--transition);font-family:inherit;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        Search
+      </button>
+    </div>
+
+    <div id="homePills" style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+      <button data-filter="all" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid var(--primary);background:var(--primary);color:white;font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg> All Events</button>
+      <button data-filter="tech" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid #e5e7eb;background:white;color:var(--text-light);font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m7.8 16.2-2.9 2.9"/><path d="M6 12H2"/><path d="m7.8 7.8-2.9-2.9"/><circle cx="12" cy="12" r="3"/></svg> Technology</button>
+      <button data-filter="business" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid #e5e7eb;background:white;color:var(--text-light);font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg> Business</button>
+      <button data-filter="design" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid #e5e7eb;background:white;color:var(--text-light);font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m14.31 8 5.74 9.94"/><path d="M9.69 8h11.48"/><path d="m7.38 12 5.74-9.94"/><path d="M9.69 16 3.95 6.06"/><path d="M14.31 16H2.83"/><path d="m16.62 12-5.74 9.94"/></svg> Design</button>
+      <button data-filter="music" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid #e5e7eb;background:white;color:var(--text-light);font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Music</button>
+      <button data-filter="other" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid #e5e7eb;background:white;color:var(--text-light);font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg> Other</button>
+    </div>
+  </div>
+
+  <div style="position:relative;height:420px;display:flex;align-items:center;justify-content:center;perspective:1000px;">
+    <div style="position:absolute;inset:0;background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 40%,#f0fdf4 100%);border-radius:24px;overflow:hidden;">
+      <svg style="position:absolute;bottom:0;left:0;right:0;height:120px;" viewBox="0 0 600 120" preserveAspectRatio="none">
+        <path d="M0,60 C150,120 300,0 600,60 L600,120 L0,120 Z" fill="rgba(255,255,255,0.6)"/>
+        <path d="M0,80 C200,140 400,20 600,80 L600,120 L0,120 Z" fill="rgba(255,255,255,0.4)"/>
+      </svg>
+    </div>
+    <div style="position:absolute;top:10%;right:5%;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;z-index:1;">
+      <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span> <span style="width:5px;height:5px;background:#cbd5e1;border-radius:50%;opacity:0.5;"></span>
+    </div>
+    <div class="hero-orb-3d hero-orb-1" style="position:absolute;width:180px;height:180px;top:15%;right:15%;z-index:3;">
+      <div style="width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#86efac 0%,#4ade80 25%,#22c55e 50%,#86efac 75%,#4ade80 100%);box-shadow:inset -10px -10px 30px rgba(0,0,0,0.1),inset 10px 10px 30px rgba(255,255,255,0.4),0 20px 40px rgba(34,197,94,0.2);position:relative;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;height:60%;background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 100%);border-radius:50%;box-shadow:inset 0 0 20px rgba(255,255,255,0.8);"></div>
+      </div>
+    </div>
+    <div class="hero-orb-3d hero-orb-2" style="position:absolute;width:140px;height:140px;bottom:20%;right:30%;z-index:4;">
+      <div style="width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e0f2fe 0%,#7dd3fc 40%,#38bdf8 100%);box-shadow:inset -8px -8px 20px rgba(0,0,0,0.08),inset 8px 8px 20px rgba(255,255,255,0.5),0 15px 35px rgba(56,189,248,0.25);"></div>
+    </div>
+    <div class="hero-glass-3d hero-glass-1" style="position:absolute;width:50px;height:50px;background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);border-radius:10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,0.06);z-index:5;top:20%;left:20%;width:45px;height:45px;"></div>
+    <div class="hero-glass-3d hero-glass-2" style="position:absolute;width:50px;height:50px;background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);border-radius:10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,0.06);z-index:5;top:45%;left:8%;width:35px;height:35px;"></div>
+    <div class="hero-glass-3d hero-glass-3" style="position:absolute;width:50px;height:50px;background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);border-radius:10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(0,0,0,0.06);z-index:5;bottom:30%;right:8%;width:40px;height:40px;"></div>
+    <div class="hero-dot-3d hero-dot-1" style="position:absolute;border-radius:50%;z-index:2;width:24px;height:24px;background:radial-gradient(circle at 30% 30%,#bbf7d0,#86efac);top:35%;right:45%;box-shadow:0 4px 12px rgba(134,239,172,0.4);"></div>
+    <div class="hero-dot-3d hero-dot-2" style="position:absolute;border-radius:50%;z-index:2;width:18px;height:18px;background:radial-gradient(circle at 30% 30%,#bae6fd,#7dd3fc);bottom:40%;left:30%;box-shadow:0 4px 12px rgba(125,211,252,0.4);"></div>
+    <div class="hero-dot-3d hero-dot-3" style="position:absolute;border-radius:50%;z-index:2;width:14px;height:14px;background:radial-gradient(circle at 30% 30%,#ddd,#bbb);top:15%;right:40%;box-shadow:0 4px 10px rgba(0,0,0,0.1);"></div>
+  </div>
+</section>
+
+<section class="events-section" style="max-width:1280px;margin:0 auto;padding:2rem 2rem 4rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    <h2 style="display:flex;align-items:center;gap:0.6rem;font-size:1.15rem;font-weight:700;"><span style="width:10px;height:10px;background:var(--primary);border-radius:50%;display:inline-block;"></span>Upcoming Events</h2>
+    <span style="font-size:0.85rem;color:var(--text-light);font-weight:500;">Showing 12 events</span>
+  </div>
+
+  <div class="events-grid">
+    <article class="event-card">
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=400&fit=crop" alt="Tech Summit">
+        <span class="card-tag tech">Technology</span>
+      </div>
+      <div class="card-body">
+        <h3><a href="https://www.bengalurutechsummit.com/" target="_blank" rel="noopener noreferrer" class="card-title-link">Tech Summit 2025</a></h3>
+        <div class="card-meta">
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Bangalore, India</div>
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Aug 15, 2025</div>
+        </div>
+        <p class="card-desc">Join industry leaders and innovators shaping the future of technology.</p>
+        <div class="card-footer">
+          <span class="time"></span>
+          <button class="bookmark-btn" aria-label="Save event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <article class="event-card">
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=600&h=400&fit=crop" alt="Design Conference">
+        <span class="card-tag design">Design</span>
+      </div>
+      <div class="card-body">
+        <h3><a href="https://www.designconference.org/" target="_blank" rel="noopener noreferrer" class="card-title-link">Design Conference</a></h3>
+        <div class="card-meta">
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Mumbai, India</div>
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Aug 22, 2025</div>
+        </div>
+        <p class="card-desc">A conference for designers to inspire, learn and connect.</p>
+        <div class="card-footer">
+          <span class="time"></span>
+          <button class="bookmark-btn" aria-label="Save event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <article class="event-card">
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop" alt="Startup Pitch Day">
+        <span class="card-tag business">Business</span>
+      </div>
+      <div class="card-body">
+        <h3><a href="https://www.headstart.in/bharat-pitchathon" target="_blank" rel="noopener noreferrer" class="card-title-link">Startup Pitch Day</a></h3>
+        <div class="card-meta">
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Hyderabad, India</div>
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Sept 12, 2025</div>
+        </div>
+        <p class="card-desc">Pitch your startup to investors and grow your network.</p>
+        <div class="card-footer">
+          <span class="time"></span>
+          <button class="bookmark-btn" aria-label="Save event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <article class="event-card">
+      <div class="card-image">
+        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&h=400&fit=crop" alt="Music Fest">
+        <span class="card-tag music">Music</span>
+      </div>
+      <div class="card-body">
+        <h3><a href="https://www.district.in/events/music-in-gurgaon-book-tickets" target="_blank" rel="noopener noreferrer" class="card-title-link">Music Fest 2025</a></h3>
+        <div class="card-meta">
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Delhi, India</div>
+          <div class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> Sept 5, 2025</div>
+        </div>
+        <p class="card-desc">Experience an unforgettable night of music and entertainment.</p>
+        <div class="card-footer">
+          <span class="time"></span>
+          <button class="bookmark-btn" aria-label="Save event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" class="brand">
+        <div class="brand-icon"></div>
+        <div class="brand-text">
+          <span class="brand-name">EventHub</span>
+        </div>
+      </a>
+      <p>Your gateway to discovering and organizing amazing events.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="events.html">Events</a></li>
+        <li><a href="create-event.html">Create Event</a></li>
+        <li><a href="saved-events.html">Saved Events</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Categories</h4>
+      <ul>
+        <li><a href="events.html">Technology</a></li>
+        <li><a href="events.html">Business</a></li>
+        <li><a href="events.html">Design</a></li>
+        <li><a href="events.html">Music</a></li>
+        <li><a href="events.html">Other</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Newsletter</h4>
+      <p style="font-size:0.85rem;color:var(--text-light);line-height:1.5;margin-bottom:0.6rem;">Stay updated with the latest events and news.</p>
+      <form class="newsletter-form" onsubmit="event.preventDefault();this.querySelector('input').value='';alert('Thanks for subscribing!');">
+        <input type="email" placeholder="Enter your email" required>
+        <button type="submit" aria-label="Subscribe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+      </form>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 EventHub. All rights reserved.</div>
+</footer>
+
+<script src="../script/scripy.js"></script>
+
+</body>
+</html>
